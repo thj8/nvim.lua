@@ -107,6 +107,47 @@ return {
         }
       })
       
+      -- C/C++ LSP 配置（使用 clangd）
+      setup_lsp_server("clangd", {
+        filetypes = { "c", "cpp", "objc", "objcpp", "cuda", "proto" },
+        cmd = { "clangd", "--background-index", "--clang-tidy", "--header-insertion=iwyu", "--completion-style=detailed", "--function-arg-placeholders", "--fallback-style=llvm" },
+        on_attach = on_attach,
+        capabilities = capabilities,
+        root_dir = function(fname)
+          return vim.fs.find({ ".git", "compile_commands.json", "CMakeLists.txt" }, { upward = true, path = vim.fs.dirname(fname) })[1]
+        end
+      })
+      
+      -- Lua LSP 配置（使用 lua-language-server）
+      setup_lsp_server("lua_ls", {
+        filetypes = { "lua" },
+        cmd = { "lua-language-server" },
+        on_attach = on_attach,
+        capabilities = capabilities,
+        settings = {
+          Lua = {
+            runtime = {
+              version = "LuaJIT",
+              path = vim.split(package.path, ";")
+            },
+            diagnostics = {
+              enable = true,
+              globals = { "vim", "hs" }
+            },
+            workspace = {
+              library = {
+                [vim.fn.expand("$VIMRUNTIME/lua")] = true,
+                [vim.fn.expand("$VIMRUNTIME/lua/vim/lsp")] = true
+              },
+              checkThirdParty = false
+            },
+            telemetry = {
+              enable = false
+            }
+          }
+        }
+      })
+      
       -- 全局 LSP 键位映射
       local map = vim.keymap.set
       map("n", "gd", vim.lsp.buf.definition, { noremap = true, silent = true, desc = "跳转到定义" })
