@@ -1,4 +1,3 @@
--- ~/.config/nvim/lua/core/options.lua
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.background = "dark"
@@ -17,4 +16,4 @@ vim.opt.tabstop = 2
 vim.opt.softtabstop = 2
 vim.opt.cindent = true
 vim.opt.smartindent = true
-vim.opt.paste = true
+-- vim.opt.paste = true

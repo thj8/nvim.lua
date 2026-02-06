@@ -1,11 +1,10 @@
--- ~/.config/nvim/lua/plugins/translate.lua
 return {
 	"JuanZoran/Trans.nvim",
 	build = function() require 'Trans'.install() end,
 	keys = {
-		{ 'mm', mode = { 'n', 'x' }, '<Cmd>Translate<CR>', desc = '󰊿 Translate' },
-		{ 'mk', mode = { 'n', 'x' }, '<Cmd>TransPlay<CR>', desc = ' Auto Play' },
-		{ 'mi', '<Cmd>TranslateInput<CR>', desc = '󰊿 Translate From Input' },
+		{ 'mm', mode = { 'n', 'x' }, '<Cmd>Translate<CR>', desc = '󰊿 翻译' },
+		{ 'mk', mode = { 'n', 'x' }, '<Cmd>TransPlay<CR>', desc = ' 自动播放' },
+		{ 'mi', '<Cmd>TranslateInput<CR>', desc = '󰊿 从输入翻译' },
 	},
 	dependencies = { 'kkharji/sqlite.lua', },
 	opts = {

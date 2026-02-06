@@ -1,10 +1,9 @@
--- ~/.config/nvim/lua/core/keymaps.lua
 local map = vim.keymap.set
 
--- leader
+-- 领袖键
 vim.g.mapleader = ","
 
--- Save & quit
+-- 保存和退出
 map("n", "Q", ":q<CR>")
 map("n", "<C-q>", ":qa<CR>")
 map("n", "<C-s>", ":w<CR>")
@@ -12,7 +11,7 @@ map("n", "<C-s>", ":w<CR>")
 -- 自动插入代码快
 map("i", "{{", "{<CR>}<UP><ESC>o")
 
--- buffers
+-- 缓冲区
 map("n", "bl", ":ls<CR>", { silent = true })
 map("n", "bu", ":enew<CR>", { silent = true })
 map("n", "bn", ":bnext<CR>", { silent = true })
