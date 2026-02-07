@@ -16,4 +16,3 @@ vim.opt.tabstop = 2
 vim.opt.softtabstop = 2
 vim.opt.cindent = true
 vim.opt.smartindent = true
--- vim.opt.paste = true

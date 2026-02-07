@@ -79,6 +79,9 @@ nvim
 | `<C-s>` | 保存文件 | 普通 |
 | `<leader>w` | 保存文件 | 普通 |
 | `<C-g>` | 打开 lazygit | 普通 |
+| `<leader>s` | 重新加载配置文件 | 普通 |
+| `<leader>ev` | 编辑配置文件 | 普通 |
+| `<leader>l` | 编辑文件 | 普通 |
 | `bl` | 列出所有缓冲区 | 普通 |
 | `bu` | 新建缓冲区 | 普通 |
 | `bn` | 下一个缓冲区 | 普通 |
@@ -160,6 +163,11 @@ nvim
 - **markdown-preview.nvim** - Markdown 预览
 - **neo-tree.nvim** - 文件树导航
 
+### 插件冲突处理
+- **补全插件**：建议只启用一个补全插件（blink.cmp 或 nvim-cmp），两个插件同时启用可能会冲突
+- **格式化插件**：conform.nvim 与 LSP 格式化功能可能冲突，建议只使用一种
+- **paste 模式**：启用 paste 模式会禁用补全功能，建议在正常编辑时禁用，仅在粘贴代码时启用
+
 ## 📝 使用说明
 
 ### 启动 Neovim
@@ -217,6 +225,12 @@ nvim
 - 确保已安装相应的格式化工具
 - 检查 LSP 服务器是否支持格式化
 - 查看 `lua/plugins/lsp.lua` 中的格式化配置
+
+### 补全功能不工作
+- 检查是否同时启用了多个补全插件（如 blink.cmp 和 nvim-cmp）
+- 检查 paste 模式是否已禁用（`:set nopaste`）
+- 检查 LSP 服务器是否正常运行（`:LspInfo`）
+- 尝试手动触发补全（`<C-space>`）
 
 ## 📄 许可证
 
