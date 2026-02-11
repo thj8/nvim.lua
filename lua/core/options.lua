@@ -1,6 +1,5 @@
 vim.opt.number = true
 vim.opt.relativenumber = true
-vim.opt.background = "dark"
 vim.opt.autochdir = true
 vim.opt.cursorline = true
 vim.opt.linespace = 0
@@ -16,3 +15,4 @@ vim.opt.tabstop = 2
 vim.opt.softtabstop = 2
 vim.opt.cindent = true
 vim.opt.smartindent = true
+
