@@ -39,11 +39,11 @@ return {
     })
 
     -- ✅ Go：关掉内置 syntax，避免抢高亮
-    vim.api.nvim_create_autocmd("FileType", {
-      pattern = "go",
-      callback = function()
-        vim.cmd("syntax off")
-      end,
-    })
+    -- vim.api.nvim_create_autocmd("FileType", {
+    --   pattern = "go",
+    --   callback = function()
+    --     vim.cmd("syntax off")
+    --   end,
+    -- })
   end,
 }
