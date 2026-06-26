@@ -18,7 +18,7 @@ return {
           end,
         })
       end
-      
+
       -- 通用 on_attach 函数
       local function on_attach(client, bufnr)
         -- 启用 LSP 提供的格式化能力
@@ -38,10 +38,23 @@ return {
           })
         end
       end
-      
-      -- 获取通用 capabilities
-      local capabilities = vim.lsp.protocol.make_client_capabilities()
-      
+
+      -- 获取通用 capabilities（融合 blink.cmp 的能力，LSP 补全才生效）
+      local capabilities = require('blink.cmp').get_lsp_capabilities(
+        vim.lsp.protocol.make_client_capabilities()
+      )
+
+      -- 诊断配置
+      vim.diagnostic.config({
+        virtual_text = true,  -- 在行末显示错误信息
+        signs = true,         -- 显示 E/W 标志
+        underline = true,     -- 错误行下划线
+        float = {
+          border = "rounded", -- 浮动窗口样式
+          source = "always",  -- 显示来源
+        },
+      })
+
       -- Go LSP 配置
       setup_lsp_server("gopls", {
         filetypes = { "go", "gomod", "gosum" },
@@ -51,11 +64,12 @@ return {
         settings = {
           gopls = {
             analyses = {
-              unusedparams = true,
-              unusedwrite = true,
+              unusedparams = false,
+              unusedwrite = false,
+              modernize = false,
             },
-            staticcheck = true,
-            gofumpt = true,  -- 启用 gofumpt 格式化
+            staticcheck = false,
+            gofumpt = true, -- 启用 gofumpt 格式化
             codelenses = {
               generate = true,
               gc_details = true,
@@ -64,7 +78,7 @@ return {
           },
         },
       })
-      
+
       -- Python LSP 配置（使用 pylsp）
       setup_lsp_server("pylsp", {
         filetypes = { "python" },
@@ -76,21 +90,21 @@ return {
             configurationSources = { "flake8" },
             plugins = {
               -- 启用格式化插件
-              black = { 
+              black = {
                 enabled = true,
                 line_length = 88
               },
               autopep8 = { enabled = false },
               yapf = { enabled = false },
               -- 启用 import 排序
-              isort = { 
+              isort = {
                 enabled = true,
                 profile = "black"
               },
               -- 代码检查工具
               pylint = { enabled = true },
               pyflakes = { enabled = true },
-              pycodestyle = { 
+              pycodestyle = {
                 enabled = true,
                 ignore = { "W391", "E501" },
                 maxLineLength = 88
@@ -105,7 +119,7 @@ return {
           }
         }
       })
-      
+
       -- C/C++ LSP 配置（使用 clangd）
       setup_lsp_server("clangd", {
         filetypes = { "c", "cpp", "objc", "objcpp", "cuda", "proto" },
@@ -113,10 +127,11 @@ return {
         on_attach = on_attach,
         capabilities = capabilities,
         root_dir = function(fname)
-          return vim.fs.find({ ".git", "compile_commands.json", "CMakeLists.txt" }, { upward = true, path = vim.fs.dirname(fname) })[1]
+          return vim.fs.find({ ".git", "compile_commands.json", "CMakeLists.txt" },
+            { upward = true, path = vim.fs.dirname(fname) })[1]
         end
       })
-      
+
       -- Lua LSP 配置（使用 lua-language-server）
       setup_lsp_server("lua_ls", {
         filetypes = { "lua" },
@@ -146,7 +161,29 @@ return {
           }
         }
       })
-      
+
+      -- TypeScript / JavaScript LSP 配置
+      setup_lsp_server("ts_ls", {
+        filetypes = { "typescript", "javascript", "typescriptreact", "javascriptreact" },
+        cmd = { "typescript-language-server", "--stdio" },
+        on_attach = on_attach,
+        capabilities = capabilities,
+        root_dir = function(fname)
+          return vim.fs.find({ "tsconfig.json", "package.json", ".git" },
+            { upward = true, path = vim.fs.dirname(fname) })[1]
+        end,
+        settings = {
+          typescript = {
+            suggest = { autoImports = true },
+            preferences = { importModuleSpecifierPreference = "relative" },
+          },
+          javascript = {
+            suggest = { autoImports = true },
+            preferences = { importModuleSpecifierPreference = "relative" },
+          },
+        },
+      })
+
       -- 全局 LSP 键位映射
       local map = vim.keymap.set
       map("n", "gd", vim.lsp.buf.definition, { noremap = true, silent = true, desc = "跳转到定义" })
@@ -156,7 +193,8 @@ return {
       map("n", "K", vim.lsp.buf.hover, { noremap = true, silent = true, desc = "悬停提示" })
       map("n", "<leader>ca", vim.lsp.buf.code_action, { noremap = true, silent = true, desc = "代码操作" })
       map("n", "<leader>rn", vim.lsp.buf.rename, { noremap = true, silent = true, desc = "重命名" })
-      map("n", "<leader>f", function() vim.lsp.buf.format { async = true } end, { noremap = true, silent = true, desc = "格式化" })
+      map("n", "<leader>f", function() vim.lsp.buf.format { async = true } end,
+        { noremap = true, silent = true, desc = "格式化" })
       map("n", "<leader>e", vim.diagnostic.open_float, { noremap = true, silent = true, desc = "显示诊断" })
       map("n", "[d", vim.diagnostic.goto_prev, { noremap = true, silent = true, desc = "上一个诊断" })
       map("n", "]d", vim.diagnostic.goto_next, { noremap = true, silent = true, desc = "下一个诊断" })
