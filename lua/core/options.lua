@@ -26,3 +26,6 @@ vim.opt.foldlevelstart = 99
 vim.opt.foldcolumn = "1"        -- 左侧显示折叠标记列（可选，不要可设为 "0"）
 vim.opt.fillchars:append({ fold = " " })
 
+-- 状态栏：用 %F 显示绝对全路径（默认 %f 受 autochdir 影响会退化成文件名）
+vim.opt.statusline = "%F %m%r%h%w%= %-14.(%l,%c%V%) %P"
+
