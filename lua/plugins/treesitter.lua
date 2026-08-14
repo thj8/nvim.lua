@@ -1,49 +1,29 @@
+-- 现代版 nvim-treesitter 配置
+-- 注意：新版已移除 :TSInstall 命令 和 opts.ensure_installed / highlight / indent 模块
+-- parser 需要 tree-sitter CLI 才能编译：brew install tree-sitter
 return {
   "nvim-treesitter/nvim-treesitter",
   build = ":TSUpdate",
 
-  opts = {
-    ensure_installed = {
-      "lua",
-      "go",
-      "python",
-      "c",
-    },
+  config = function()
+    -- ① 启动时确保这些语言已安装（等价于旧版 ensure_installed）
+    --    幂等：已装的会自动跳过，不会重复编译
+    local wanted = { "typescript", "tsx", "lua", "go", "python", "c" }
+    require("nvim-treesitter").install(wanted)
 
-    sync_install = false,
-
-    highlight = {
-      enable = true,
-      additional_vim_regex_highlighting = false,
-    },
-
-    indent = {
-      enable = true,
-    },
-  },
-
-  -- ⚠️ 注意：这里不再 require configs
-  config = function(_, opts)
-    -- Lazy.nvim 会自动把 opts 喂给 treesitter
-    -- 我们这里只做“补丁行为”
-
-    -- ✅ Neovim 0.11：显式启动 Treesitter highlighter
+    -- ② 打开文件时：有 parser 就启动高亮 + 折叠；没有就异步安装（重开即生效）
     vim.api.nvim_create_autocmd("FileType", {
       callback = function(args)
-        local ft = vim.bo[args.buf].filetype
-        local lang = vim.treesitter.language.get_lang(ft)
-        if lang then
-          pcall(vim.treesitter.start, args.buf, lang)
+        local lang = vim.treesitter.language.get_lang(vim.bo[args.buf].filetype)
+        if not lang then
+          return
+        end
+        local ok = pcall(vim.treesitter.start, args.buf, lang)
+        if not ok then
+          -- parser 缺失 → 自动安装
+          require("nvim-treesitter").install({ lang })
         end
       end,
     })
-
-    -- ✅ Go：关掉内置 syntax，避免抢高亮
-    -- vim.api.nvim_create_autocmd("FileType", {
-    --   pattern = "go",
-    --   callback = function()
-    --     vim.cmd("syntax off")
-    --   end,
-    -- })
   end,
 }
