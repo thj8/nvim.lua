@@ -21,22 +21,7 @@ return {
 
       -- 通用 on_attach 函数
       local function on_attach(client, bufnr)
-        -- 启用 LSP 提供的格式化能力
-        if client.server_capabilities.documentFormattingProvider then
-          -- 仅在支持格式化的 LSP 上启用自动格式化
-          vim.api.nvim_create_autocmd("BufWritePre", {
-            buffer = bufnr,
-            callback = function()
-              vim.lsp.buf.format({
-                async = false,
-                filter = function(cli)
-                  -- 只使用当前客户端的格式化功能
-                  return cli.name == client.name
-                end
-              })
-            end
-          })
-        end
+        -- 已按需求移除保存时自动格式化；手动格式化用 <leader>f
       end
 
       -- 获取通用 capabilities（融合 blink.cmp 的能力，LSP 补全才生效）
@@ -184,12 +169,52 @@ return {
         },
       })
 
+      -- ESLint 保存时自动 --fix（curly + brace-style：补大括号、拆单行块）
+      -- 手动触发：<leader>lf（只在项目有 eslint 配置或全局 fallback 可用时执行）
+      -- （已按需求移除保存时自动 fix，改手动）
+      local function eslint_fix()
+        local fname = vim.api.nvim_buf_get_name(0)
+        if fname == "" then return end
+        local dir = vim.fs.dirname(fname)
+        local config = vim.fs.find(
+          { "eslint.config.js", "eslint.config.mjs", "eslint.config.ts" },
+          { upward = true, path = dir }
+        )[1]
+        local cmd
+        if config then
+          local bin = vim.fs.dirname(config) .. "/node_modules/.bin/eslint"
+          if vim.uv.fs_stat(bin) then
+            cmd = { bin, "--fix", fname }
+          end
+        end
+        if not cmd then
+          local gbin = vim.fn.exepath("eslint")
+          local gconf = vim.fn.expand("~/.config/eslint.config.mjs")
+          if gbin ~= "" and vim.uv.fs_stat(gconf) then
+            cmd = { gbin, "--config", gconf, "--fix", fname }
+          end
+        end
+        if not cmd then
+          vim.notify("eslint 不可用", vim.log.levels.WARN)
+          return
+        end
+        -- eslint v10 会忽略 base path（cwd）之外的文件，cwd 必须切到文件目录
+        local pos = vim.api.nvim_win_get_cursor(0)
+        local r = vim.system(cmd, { cwd = dir, text = true }):wait()
+        if r.code == 0 then
+          vim.cmd("silent! edit!")
+          pcall(vim.api.nvim_win_set_cursor, 0, pos)
+        else
+          vim.notify("eslint --fix 失败: " .. (r.stderr or ""), vim.log.levels.ERROR)
+        end
+      end
+      vim.keymap.set("n", "<leader>lf", eslint_fix, { silent = true, desc = "eslint --fix" })
+
       -- 全局 LSP 键位映射
       local map = vim.keymap.set
       map("n", "gd", vim.lsp.buf.definition, { noremap = true, silent = true, desc = "跳转到定义" })
       map("n", "gD", vim.lsp.buf.declaration, { noremap = true, silent = true, desc = "跳转到声明" })
       map("n", "gi", vim.lsp.buf.implementation, { noremap = true, silent = true, desc = "跳转到实现" })
-      map("n", "gr", vim.lsp.buf.references, { noremap = true, silent = true, desc = "查看引用" })
       map("n", "K", vim.lsp.buf.hover, { noremap = true, silent = true, desc = "悬停提示" })
       map("n", "<leader>ca", vim.lsp.buf.code_action, { noremap = true, silent = true, desc = "代码操作" })
       map("n", "<leader>rn", vim.lsp.buf.rename, { noremap = true, silent = true, desc = "重命名" })
@@ -198,6 +223,7 @@ return {
       map("n", "<leader>e", vim.diagnostic.open_float, { noremap = true, silent = true, desc = "显示诊断" })
       map("n", "[d", vim.diagnostic.goto_prev, { noremap = true, silent = true, desc = "上一个诊断" })
       map("n", "]d", vim.diagnostic.goto_next, { noremap = true, silent = true, desc = "下一个诊断" })
+      map("n", "<leader>q", ":cclose<CR>", { silent = true, desc = "关闭 quickfix" })
     end,
   },
 }
